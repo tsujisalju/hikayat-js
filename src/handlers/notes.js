@@ -18,7 +18,10 @@ function readBody(req) {
 }
 
 export function getNotes(req, res) {
-    const { q } = req.query;
+    const { q, tag } = req.query;
+    if (tag) {
+        return res.json(notesStore.getByTag(tag));
+    }
     if (q) {
         return res.json(notesStore.search(q));
     }
@@ -34,24 +37,40 @@ export function getNote(req, res) {
     res.json(note);
 }
 
-export async function createNote(req, res) {
-    const { title, content } = req.body; // note: req is a stream of data chunks, express handles parsing for you
-    const note = notesStore.create(title, content);
+export function createNote(req, res) {
+    const { title, content, tags } = req.body; // note: req is a stream of data chunks, express handles parsing for you
+    const note = notesStore.create(title, content, tags);
     res.status(201).json(note);
 }
 
-export async function updateNote(req, res) {
+export function updateNote(req, res) {
     const id = Number(req.params.id)
-    const { title, content } = req.body;
-    const updated = notesStore.update(id, title, content);
+    const { title, content, tags } = req.body;
+    const updated = notesStore.update(id, title, content, tags);
     if (!updated) {
         return res.status(404).json({ error: "Note not found" });
     }
     res.json(updated);
 }
 
+export function addTagToNote(req, res) {
+    const id = Number(req.params.id);
+    const { tag } = req.body;
+
+    if (typeof tag !== 'string' || tag.trim().length === 0) {
+        return res.status(422).json({ error: "tag must be a non-empty string" });
+    }
+
+    const updated = notesStore.addTag(id, tag);
+    if (!updated) {
+        return res.status(404).json({ error: "Note not found" });
+    }
+
+    res.json(updated);
+}
+
 export function deleteNote(req, res) {
-  const id = Number(req.params.id)
+    const id = Number(req.params.id);
     const removed = notesStore.remove(id);
     if (!removed) {
         return res.status(404).json({ error: "Note not found" });
