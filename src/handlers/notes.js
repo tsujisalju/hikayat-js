@@ -18,6 +18,10 @@ function readBody(req) {
 }
 
 export function getNotes(req, res) {
+    const { q } = req.query;
+    if (q) {
+        return res.json(notesStore.search(q));
+    }
     res.json(notesStore.getAll());
 }
 

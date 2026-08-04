@@ -29,3 +29,10 @@ export function remove(id) {
     notes.splice(index, 1);
     return true;
 }
+
+export function search(query) {
+    const lower = query.toLowerCase();
+    return notes.filter((note) =>
+        note.title.toLowerCase().includes(lower) ||
+        note.content.toLowerCase().includes(lower));
+}
