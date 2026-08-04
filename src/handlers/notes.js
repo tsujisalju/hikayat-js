@@ -1,5 +1,6 @@
 import * as notesStore from "../data/notes-store.js";
 
+// manual req data stream parsing
 function readBody(req) {
     return new Promise((resolve, reject) => {
         let body = "";
@@ -17,66 +18,39 @@ function readBody(req) {
 }
 
 export function getNotes(req, res) {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(notesStore.getAll()));
+    res.json(notesStore.getAll());
 }
 
-export function getNote(req, res, id) {
+export function getNote(req, res) {
+    const id = Number(req.params.id) // note: express handles url parsing via path patterns (/:id)
     const note = notesStore.getById(id);
     if (!note) {
-        res.statusCode = 404;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ error: "Note not found" }));
-        return;
+        return res.status(404).json({ error: "Note not found" });
     }
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(note));
+    res.json(note);
 }
 
 export async function createNote(req, res) {
-    try {
-        const parsed = await readBody(req);
-        const note = notesStore.create(parsed.title, parsed.content);
-        res.statusCode = 201;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(note));
-    } catch (err) {
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ error: "Invalid JSON" }));
-    }
+    const { title, content } = req.body; // note: req is a stream of data chunks, express handles parsing for you
+    const note = notesStore.create(title, content);
+    res.status(201).json(note);
 }
 
-export async function updateNote(req, res, id) {
-    try {
-        const parsed = await readBody(req);
-        const updated = notesStore.update(id, parsed.title, parsed.content);
-        if (!updated) {
-            res.statusCode = 404;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: "Note not found" }));
-            return;
-        }
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(updated));
-    } catch (err) {
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ error: "Invalid JSON" }));
+export async function updateNote(req, res) {
+    const id = Number(req.params.id)
+    const { title, content } = req.body;
+    const updated = notesStore.update(id, title, content);
+    if (!updated) {
+        return res.status(404).json({ error: "Note not found" });
     }
+    res.json(updated);
 }
 
-export function deleteNote(req, res, id) {
+export function deleteNote(req, res) {
+  const id = Number(req.params.id)
     const removed = notesStore.remove(id);
     if (!removed) {
-        res.statusCode = 404;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ error: "Note not found" }));
-        return;
+        return res.status(404).json({ error: "Note not found" });
     }
-    res.statusCode = 204;
-    res.end();
+    res.status(204).end();
 }

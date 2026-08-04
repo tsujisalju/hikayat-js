@@ -1,3 +1,5 @@
+//old router, handle method, url and segments manually
+
 import { getNotes, createNote, getNote, updateNote, deleteNote } from "./handlers/notes.js";
 
 function notFound(res) {
@@ -6,12 +8,12 @@ function notFound(res) {
     res.end(JSON.stringify({ message: 'Not Found' }))
 }
 
-export default function router(req, res) {
+/*export default*/ function router(req, res) {
     const { method, url } = req;
     const segments = url.split("/").filter(Boolean);
 
     if (segments[0] !== "notes") {
-        return notFound;
+        return notFound(res);
     }
 
     // /notes
@@ -22,17 +24,18 @@ export default function router(req, res) {
         if(method === "POST") {
             return createNote(req, res);
         }
-        return notFound;
+        return notFound(res);
     }
 
     // /notes/:id
     if (segments.length === 2) {
         const id = Number(segments[1]);
+        if (Number.isNaN(id)) return notFound(res);
         if (method === "GET") return getNote(req, res, id);
         if (method === "PUT") return updateNote(req, res, id);
         if (method === "DELETE") return deleteNote(req, res, id);
-        return notFound;
+        return notFound(res);
     }
 
-    return notFound;
+    return notFound(res);
 }
