@@ -38,15 +38,17 @@ export function getNote(req, res) {
 }
 
 export function createNote(req, res) {
-    const { title, content, tags } = req.body; // note: req is a stream of data chunks, express handles parsing for you
-    const note = notesStore.create(title, content, tags);
+    const { title, content, tags, type, items } = req.body; // note: req is a stream of data chunks, express handles parsing for you
+    const note = type === "checklist"
+        ? notesStore.createChecklist(title, items, tags)
+        : notesStore.create(title, content, tags);
     res.status(201).json(note);
 }
 
 export function updateNote(req, res) {
     const id = Number(req.params.id)
-    const { title, content, tags } = req.body;
-    const updated = notesStore.update(id, title, content, tags);
+    const { title, content, tags, items, type } = req.body;
+    const updated = notesStore.update(id, title, content, tags, items, type);
     if (!updated) {
         return res.status(404).json({ error: "Note not found" });
     }

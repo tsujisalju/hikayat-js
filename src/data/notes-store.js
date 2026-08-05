@@ -1,3 +1,5 @@
+import { ChecklistNote, Note } from "../models/Note.js";
+
 let notes = [];
 let nextId = 1;
 
@@ -10,17 +12,26 @@ export function getById(id) {
 }
 
 export function create(title, content, tags = []) {
-    const tagSet = new Set(tags.map((t) => t.toLowerCase().trim()));
-    const note = { id: nextId++, title, content, tags: [...tagSet] };
+    const note = new Note(title, content, tags);
     notes.push(note);
     return note;
 }
 
-export function update(id, title, content, tags) {
+export function createChecklist(title, items, tags) {
+    const note = new ChecklistNote(title, items, tags);
+    notes.push(note);
+    return note;
+}
+
+export function update(id, title, content, tags, items, type) {
     const note = getById(id);
     if (!note) return null;
     note.title = title;
-    note.content = content;
+    if (type === "checklist") {
+        note.items = items.map((item) => ({ text: item.text, done: !!item.done}));
+    } else {
+      note.content = content;
+    }
     if (tags) {
         const tagSet = new Set(tags.map((t) => t.toLowerCase().trim()));
         note.tags = [...tagSet];
