@@ -1,4 +1,5 @@
 import * as notesStore from "../data/notes-store.js";
+import { getNoteErrors } from "../middleware/validate-notes.js";
 
 // manual req data stream parsing
 function readBody(req) {
@@ -78,4 +79,53 @@ export function deleteNote(req, res) {
         return res.status(404).json({ error: "Note not found" });
     }
     res.status(204).end();
+}
+
+export async function createOne(payload) {
+    return new Promise((resolve, reject) => {
+
+        // validation happens synchronously before the async work is simulated
+        const errors = getNoteErrors(payload);
+        if (errors.length > 0) {
+            reject(new Error(errors.join("; ")));
+            return;
+        }
+
+        // simulate async work
+        // this callback is a macrotask that is added to the event loop queue
+        // it is executed later, only when current call stack is empty and all microtasks have drained
+        setTimeout(() => {
+            try {
+                const note = payload.type === "checklist"
+                    ? notesStore.createChecklist(payload.title, payload.items, payload.tags)
+                    : notesStore.create(payload.title, payload.content, payload.tags);
+                resolve(note);
+            } catch (err) {
+                reject(err);
+            }
+        }, 0);
+    })
+}
+
+export async function batchCreateNotes(req, res) {
+    const { notes } = req.body;
+    if(!Array.isArray(notes) || notes.length === 0) {
+        return res.status(422).json({ error: "notes must be a non-empty array" });
+    }
+
+    // Promise.allSettled will resolve regardless of the outcome of each promise
+    // Promise.all otherwise would reject immediately on the first error
+    const results = await Promise.allSettled(notes.map((payload) => createOne(payload))); //map() happens synchronously, creating N promises up front, essentially firing them in parallel
+
+    const created = [];
+    const failed = [];
+
+    results.forEach((result, index) => {
+        if (result.status === "fulfilled") {
+            created.push(result.value);
+        } else {
+            failed.push({ index, error: result.reason.message });
+        }
+    });
+    res.status(207).json({ created, failed });
 }
