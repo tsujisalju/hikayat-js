@@ -23,6 +23,7 @@ export class Note {
     toJSON() { // JSON.stringify will call toJSON() automatically if it exists
         return {
             id: this.id,
+            type: this.constructor.name,
             title: this.title,
             content: this.content,
             tags: this.tags,

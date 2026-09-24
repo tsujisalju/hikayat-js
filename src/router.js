@@ -1,4 +1,4 @@
-//old router, handle method, url and segments manually
+//old router, handle method, url and segments manually, now using Express
 
 import { getNotes, createNote, getNote, updateNote, deleteNote } from "./handlers/notes.js";
 

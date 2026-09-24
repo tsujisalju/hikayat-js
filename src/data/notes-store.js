@@ -64,5 +64,6 @@ export function search(query) {
     const lower = query.toLowerCase();
     return notes.filter((note) =>
         note.title.toLowerCase().includes(lower) ||
-        note.content.toLowerCase().includes(lower));
+        note.content.toLowerCase().includes(lower) ||
+        note.tags.some((tag) => tag.includes(lower)))
 }

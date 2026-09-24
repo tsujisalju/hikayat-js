@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hikayat</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <h1>Hikayat</h1>
+    </header>
+    <main>
+        <section aria-labelledby="create-note-heading">
+            <h2 id="create-note-heading">New note</h2>
+            <form id="note-form">
+                <div>
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                <div>
+                    <label for="content">Content</label>
+                    <textarea id="content" name="content" required></textarea>
+                </div>
+                <button type="submit">Add note</button>
+            </form>
+        </section>
+
+        <section aria-labelledby="search-heading">
+            <h2 id="search-heading">Search</h2>
+            <form id="search-form">
+                <label for="search-input">Search by text or tag</label>
+                <input type="text" id="search-input" name="q">
+                <button type="submit">Search</button>
+                <button type="reset" id="clear-search">Clear</button>
+            </form>
+        </section>
+
+        <section aria-labelledby="notes-list-heading">
+            <h2 id="notes-heading">Notes</h2>
+            <ul id="notes-list"></ul>
+        </section>
+    </main>
+    <div id="status" role="status" aria-live="polite" class="visually-hidden"></div>
+    <script src="/app.js"></script>
+</body>
+</html>
